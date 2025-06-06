@@ -1,116 +1,50 @@
-"use client";
+"use client"
 
-import {
-  useMiniKit,
-  useAddFrame,
-  useOpenUrl,
-} from "@coinbase/onchainkit/minikit";
-import {
-  Name,
-  Identity,
-  Address,
-  Avatar,
-  EthBalance,
-} from "@coinbase/onchainkit/identity";
-import {
-  ConnectWallet,
-  Wallet,
-  WalletDropdown,
-  WalletDropdownDisconnect,
-} from "@coinbase/onchainkit/wallet";
-import { useEffect, useMemo, useState, useCallback } from "react";
-import { Button } from "./components/DemoComponents";
-import { Icon } from "./components/DemoComponents";
-import { Home } from "./components/DemoComponents";
-import { Features } from "./components/DemoComponents";
+import { CoinFlipGame } from "@/components/coin-flip-game"
+import { useEffect } from "react"
+import { useMiniKit, useAddFrame, useOpenUrl } from "@coinbase/onchainkit/minikit"
 
-export default function App() {
-  const { setFrameReady, isFrameReady, context } = useMiniKit();
-  const [frameAdded, setFrameAdded] = useState(false);
-  const [activeTab, setActiveTab] = useState("home");
-
-  const addFrame = useAddFrame();
-  const openUrl = useOpenUrl();
+export default function Home() {
+  const { setFrameReady, isFrameReady } = useMiniKit()
+  const addFrame = useAddFrame()
+  const openUrl = useOpenUrl()
 
   useEffect(() => {
     if (!isFrameReady) {
-      setFrameReady();
+      setFrameReady()
     }
-  }, [setFrameReady, isFrameReady]);
+  }, [isFrameReady, setFrameReady])
 
-  const handleAddFrame = useCallback(async () => {
-    const frameAdded = await addFrame();
-    setFrameAdded(Boolean(frameAdded));
-  }, [addFrame]);
-
-  const saveFrameButton = useMemo(() => {
-    if (context && !context.client.added) {
-      return (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleAddFrame}
-          className="text-[var(--app-accent)] p-4"
-          icon={<Icon name="plus" size="sm" />}
-        >
-          Save Frame
-        </Button>
-      );
+  const handleAddFrame = async () => {
+    const result = await addFrame()
+    if (result) {
+      console.log("Frame added:", result.url, result.token)
     }
-
-    if (frameAdded) {
-      return (
-        <div className="flex items-center space-x-1 text-sm font-medium text-[#0052FF] animate-fade-out">
-          <Icon name="check" size="sm" className="text-[#0052FF]" />
-          <span>Saved</span>
-        </div>
-      );
-    }
-
-    return null;
-  }, [context, frameAdded, handleAddFrame]);
+  }
 
   return (
-    <div className="flex flex-col min-h-screen font-sans text-[var(--app-foreground)] mini-app-theme from-[var(--app-background)] to-[var(--app-gray)]">
-      <div className="w-full max-w-md mx-auto px-4 py-3">
-        <header className="flex justify-between items-center mb-3 h-11">
-          <div>
-            <div className="flex items-center space-x-2">
-              <Wallet className="z-10">
-                <ConnectWallet>
-                  <Name className="text-inherit" />
-                </ConnectWallet>
-                <WalletDropdown>
-                  <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
-                    <Avatar />
-                    <Name />
-                    <Address />
-                    <EthBalance />
-                  </Identity>
-                  <WalletDropdownDisconnect />
-                </WalletDropdown>
-              </Wallet>
-            </div>
-          </div>
-          <div>{saveFrameButton}</div>
-        </header>
-
-        <main className="flex-1">
-          {activeTab === "home" && <Home setActiveTab={setActiveTab} />}
-          {activeTab === "features" && <Features setActiveTab={setActiveTab} />}
-        </main>
-
-        <footer className="mt-2 pt-4 flex justify-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-[var(--ock-text-foreground-muted)] text-xs"
-            onClick={() => openUrl("https://base.org/builders/minikit")}
-          >
-            Built on Base with MiniKit
-          </Button>
-        </footer>
+    <main className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-amber-50 to-amber-100 dark:from-zinc-900 dark:to-zinc-800 p-4">
+      {/* Add Frame button */}
+      <button
+        onClick={handleAddFrame}
+        className="absolute top-4 right-4 px-3 py-1 text-xs font-semibold rounded-2xl border border-black/40 bg-white/60 backdrop-blur hover:bg-white"
+      >
+        Save Frame
+      </button>
+      <div className="max-w-md w-full mx-auto">
+        <h1 className="text-4xl font-bold text-center mb-8 text-amber-600 dark:text-amber-400">Coin Flip Game</h1>
+        <CoinFlipGame />
       </div>
-    </div>
-  );
+      {/* Footer */}
+      <footer className="absolute bottom-4 flex items-center w-screen max-w-[520px] justify-center">
+        <button
+          type="button"
+          className="mt-4 ml-4 px-2 py-1 flex justify-start rounded-2xl font-semibold opacity-40 border border-black text-xs"
+          onClick={() => openUrl("https://base.org/builders/minikit")}
+        >
+          BUILT ON BASE WITH MINIKIT
+        </button>
+      </footer>
+    </main>
+  )
 }
