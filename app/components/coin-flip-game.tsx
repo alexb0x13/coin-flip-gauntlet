@@ -90,9 +90,9 @@ export function CoinFlipGame() {
       return
     }
 
-    // Deduct bet amount from balance if this is a new bet sequence
+    // Only deduct bet amount if this is the first flip of a new sequence
     if (streak === 0) {
-      setBalance((prev) => prev - betAmount)
+      setBalance(prev => prev - betAmount)
     }
 
     setIsFlipping(true)
@@ -106,7 +106,7 @@ export function CoinFlipGame() {
       const isWin = userChoice === randomResult
 
       if (isWin) {
-        setScore((prev) => ({ ...prev, wins: prev.wins + 1 }))
+        setScore(prev => ({ ...prev, wins: prev.wins + 1 }))
         const newStreak = streak + 1
         setStreak(newStreak)
         setShowConfetti(true)
@@ -114,18 +114,21 @@ export function CoinFlipGame() {
 
         const newMultiplier = getMultiplier(newStreak)
         const winAmount = betAmount * newMultiplier
-        setCurrentWinnings(winAmount)
+        
+        // For 4th win, we need to add the original bet back since it was already deducted
+        const totalWinAmount = newStreak === 4 ? winAmount + betAmount : winAmount
+        setCurrentWinnings(totalWinAmount)
         setCanCashOut(true)
 
         // Auto cash out and reset after 4th flip
         if (newStreak >= 4) {
           setTimeout(() => {
             playSound("/cash-sound.mp3")
-            setBalance((prev) => prev + winAmount)
+            setBalance(prev => prev + totalWinAmount)
 
             toast({
               title: "Maximum Multiplier Reached!",
-              description: `Congratulations! You won $${winAmount.toFixed(2)} with 20x multiplier! Game automatically reset.`,
+              description: `Congratulations! You won $${totalWinAmount.toFixed(2)} with 21x multiplier! Game automatically reset.`,
               variant: "default",
             })
 
@@ -142,7 +145,7 @@ export function CoinFlipGame() {
           })
         }
       } else {
-        setScore((prev) => ({ ...prev, losses: prev.losses + 1 }))
+        setScore(prev => ({ ...prev, losses: prev.losses + 1 }))
         setStreak(0)
         setCurrentWinnings(0)
         setCanCashOut(false)
@@ -174,7 +177,7 @@ export function CoinFlipGame() {
     if (!canCashOut) return
 
     playSound("/cash-sound.mp3")
-    setBalance((prev) => prev + currentWinnings)
+    setBalance(prev => prev + currentWinnings)
 
     toast({
       title: "Cashed Out!",
